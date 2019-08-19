@@ -20,6 +20,9 @@ class Vocab():
         self.tok_to_id = {}
         self.id_to_tok = {}
         self.add_vocab([self.unk_token, self.bos_token, self.eos_token])
+        self.unk_id = self.tok_to_id[self.unk_token]
+        self.bos_id = self.tok_to_id[self.bos_token]
+        self.eos_id = self.tok_to_id[self.eos_token]
 
         if type(source_files) != list: source_files = [source_files]
         self.to_tokenize = source_files
