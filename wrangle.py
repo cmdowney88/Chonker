@@ -5,14 +5,26 @@ import itertools
 import copy
 
 class Vocab():
-    def __init__(self, source_files, delimiter=r'\s+'):
+    def __init__(self, 
+        source_files, 
+        delimiter=r'\s+', 
+        unk_token="<UNK>", 
+        bos_token="<BOS>", 
+        eos_token="<EOS>"):
+        
+        self.delimiter = delimiter
+        self.unk_token = unk_token
+        self.bos_token = bos_token
+        self.eos_token = eos_token
+
         self.tok_to_id = {}
         self.id_to_tok = {}
-        if source_files is not list: source_files = [source_files]
+        self.add_vocab([self.unk_token, self.bos_token, self.eos_token])
+
+        if type(source_files) != list: source_files = [source_files]
         self.to_tokenize = source_files
         self.tokenized_sources = []
         self.refreshed = False
-        self.delimiter = delimiter
         
         self._refresh()
 
@@ -25,13 +37,18 @@ class Vocab():
                 tokens = list(itertools.chain.from_iterable(tokenized_lines))
                 tokens = [tok for tok in tokens if tok != '']
                 for token in tokens:
-                    if token not in self.tok_to_id:
-                        index = len(self.tok_to_id)
-                        self.tok_to_id[token] = index
-                        self.id_to_tok[index] = token
+                    self.add_vocab(token)
                 self.tokenized_sources.append(file)
         self.to_tokenize = []
         self.refreshed = True
+
+    def add_vocab(self, tokens):
+        if type(tokens) != list: tokens = [tokens]
+        for token in tokens:
+            if token not in self.tok_to_id:
+                index = len(self.tok_to_id)
+                self.tok_to_id[token] = index
+                self.id_to_tok[index] = token
 
     def add_sources(self, files):
         if files is not list: files = [files]
@@ -52,3 +69,11 @@ class Vocab():
         self.to_tokenize = []
         self.tokenized_sources = []
         self.refreshed = True
+
+    def output_vocab(self, out_file):
+        with open(out_file, 'w') as f:
+            items = list(self.tok_to_id.keys())
+            items.sort()
+            for item in items:
+                print(item, file=f)
+
