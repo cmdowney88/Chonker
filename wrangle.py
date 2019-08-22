@@ -73,7 +73,33 @@ class Vocab():
         self.tokenized_sources = []
         self.refreshed = True
 
-    def output_vocab(self, out_file):
+    def to_ids(self, tokens):
+        if type(tokens) != list: tokens = [tokens]
+        output = []
+        for token in tokens:
+            if token not in self.tok_to_id:
+                output.append(self.unk_id)
+            else:
+                output.append(self.tok_to_id[token])
+        return output
+
+    def to_tokens(self, ids):
+        if type(ids) != list: ids = [ids]
+        output = []
+        for item in ids:
+            if item not in self.id_to_tok:
+                output.append(self.unk_token)
+            else:
+                output.append(self.id_to_tok[item])
+        return output
+    
+    def size(self):
+        size1 = len(self.tok_to_id)
+        size2 = len(self.id_to_tok)
+        assert size1 == size2
+        return size1
+
+    def output(self, out_file):
         with open(out_file, 'w') as f:
             items = list(self.tok_to_id.keys())
             items.sort()
