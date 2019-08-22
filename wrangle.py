@@ -3,6 +3,7 @@ import os
 import re
 import itertools
 import copy
+from nltk import word_tokenize
 
 class Vocab():
     def __init__(self, 
@@ -99,10 +100,23 @@ class Vocab():
         assert size1 == size2
         return size1
 
-    def output(self, out_file):
+    def save(self, out_file, explicit_id=False):
         with open(out_file, 'w') as f:
-            items = list(self.tok_to_id.keys())
-            items.sort()
-            for item in items:
-                print(item, file=f)
+            items = [(key, self.tok_to_id[key]) for key in self.tok_to_id]
+            items.sort(key=lambda x: x[1])
+            if explicit_id:
+                for item in items:
+                    print(f"{item[0]} {item[1]}", file=f)
+            else:
+                for item in items:
+                    print(item[0], file=f)
 
+
+
+def basic_tokenize(in_file, out_file):
+    text = [line.rstrip('\n') for line in open(in_file, 'r')]
+    text = [word_tokenize(line) for line in text]
+    text = [[word.lower() for word in line] for line in text]
+    with open(out_file, 'w') as f:
+        for line in text:
+            print(' '.join(line), file=f)
