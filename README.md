@@ -15,7 +15,11 @@ Chonker is a work-in-progress with few guarantees. However, it is also open sour
 
 ## Contact
 C.M. Downey
-cmdowney@uw.edu
+
+*cmdowney@uw.edu*
+
 PhD Student
+
 Department of Linguistics
+
 University of Washington
