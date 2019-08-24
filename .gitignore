@@ -2,3 +2,8 @@
 __pycache__/*
 __pycahce__
 .DS_Store
+dist
+build
+*.egg-info
+setup.py
+chonker
