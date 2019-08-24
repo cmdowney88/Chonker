@@ -1,4 +1,3 @@
-<img src="logo.png" alt="Chonker Logo" align="center" width="225" height="200">
+<p align="center"><img src="logo.png" alt="Chonker Logo" width="225" height="200"></p>
 
-# Chonker
-## Utilities for NLP and Machine Learning
+# Chonker: Data Utilities for NLP and Machine Learning
