@@ -31,31 +31,34 @@ class Vocab():
         self.unk_id = self.tok_to_id[self.unk_token]
         self.bos_id = self.tok_to_id[self.bos_token]
         self.eos_id = self.tok_to_id[self.eos_token]
+        self.source_texts = []
 
         if type(source_files) != list: source_files = [source_files]
         self.to_tokenize = source_files
         self.tokenized_sources = []
         self.refreshed = False
         
-        self._refresh()
+        self.source_texts.append(self._refresh())
 
     def _refresh(self):
         '''
         Iterate through the source files in `to_tokenize`. If they have not yet been input, 
         tokenize them and add their vocabulary
         '''
+        tokenized_texts = []
         for file in self.to_tokenize:
             if file not in self.tokenized_sources:
                 with open(file, 'r') as f:
                     lines = f.readlines()
-                tokenized_lines = [re.split(self.delimiter, line.strip()) for line in lines]
+                tokenized_lines = [[tok for tok in re.split(self.delimiter, line.strip()) if tok != ''] for line in lines]
                 tokens = list(itertools.chain.from_iterable(tokenized_lines))
-                tokens = [tok for tok in tokens if tok != '']
                 for token in tokens:
                     self.add_vocab(token)
                 self.tokenized_sources.append(file)
+                tokenized_texts.append(tokenized_lines)
         self.to_tokenize = []
         self.refreshed = True
+        return tokenized_texts
 
     def add_vocab(self, tokens):
         '''Add vocabulary items directly as a string or list of strings'''
@@ -71,7 +74,7 @@ class Vocab():
         if files is not list: files = [files]
         for file in files:
             self.to_tokenize.append(file)
-        self._refresh()
+        self.source_texts.append(self._refresh())
 
     def sources_added(self, files):
         '''Return new copy of `Vocab` object with new source files added'''
@@ -85,6 +88,7 @@ class Vocab():
         self.id_to_tok = {}
         self.to_tokenize = []
         self.tokenized_sources = []
+        self.source_texts = []
         self.refreshed = True
 
     def to_ids(self, tokens):
@@ -139,6 +143,9 @@ class Vocab():
                     print(item[0], file=f)
 
 
+def flatten(multi_list):
+    return list(itertools.chain.from_iterable(multi_list))
+
 
 def basic_tokenize(in_file, out_file=None):
     '''
@@ -152,5 +159,20 @@ def basic_tokenize(in_file, out_file=None):
         with open(out_file, 'w') as f:
             for line in text:
                 print(' '.join(line), file=f)
+    else:
+        return text
+
+
+def character_tokenize(in_file, out_file=None):
+    '''
+    Character tokenize the input file, lowercasing and exlcuding whitespace. If an `out_file`
+    is given print the tokenized text to this file.
+    '''
+    text = [re.split(r'\s+', line.rstrip('\n')) for line in open(in_file, 'r')]
+    text = [list(itertools.chain.from_iterable([[char for char in word.lower()] for word in line])) for line in text]
+    if out_file:
+        with open(out_file, 'w') as f: 
+            for line in text:
+                print(''.join(line), file=f)
     else:
         return text
