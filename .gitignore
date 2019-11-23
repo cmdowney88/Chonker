@@ -6,5 +6,4 @@ dist
 build
 *.egg-info
 setup.py
-chonker
 *.xcf
