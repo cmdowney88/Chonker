@@ -17,7 +17,8 @@ class Vocab():
                  delimiter=r'\s+', 
                  unk_token="<UNK>", 
                  bos_token="<BOS>", 
-                 eos_token="<EOS>"):
+                 eos_token="<EOS>",
+                 other_tokens=None):
         '''Initialize `Vocab` object from a source file'''
 
         self.delimiter = delimiter
@@ -28,6 +29,8 @@ class Vocab():
         self.tok_to_id = {}
         self.id_to_tok = {}
         self.add_vocab([self.unk_token, self.bos_token, self.eos_token])
+        if other_tokens:
+            self.add_vocab(other_tokens)
         self.unk_id = self.tok_to_id[self.unk_token]
         self.bos_id = self.tok_to_id[self.bos_token]
         self.eos_id = self.tok_to_id[self.eos_token]
@@ -38,7 +41,7 @@ class Vocab():
         self.tokenized_sources = []
         self.refreshed = False
         
-        self.source_texts.append(self._refresh())
+        self.tokenized_sources.append(self._refresh())
 
     def _refresh(self):
         '''
@@ -145,6 +148,14 @@ class Vocab():
 
 def flatten(multi_list):
     return list(itertools.chain.from_iterable(multi_list))
+
+
+def get_lines(file):
+    return [line.rstrip('\n') for line in open(file, 'r')]
+
+
+def split_lines(lines, delimiter=r'\s+'):
+    return [re.split(delimiter, line) for line in lines]
 
 
 def basic_tokenize(in_file, out_file=None):
