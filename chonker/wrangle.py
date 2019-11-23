@@ -165,7 +165,7 @@ def basic_tokenize(in_file, out_file=None):
     '''
     text = [line.rstrip('\n') for line in open(in_file, 'r')]
     text = [re.split(r'\s+', line) for line in text]
-    text = [[word.lower() for word in line] for line in text]
+    text = [[word.lower() if not word.startswith('<') else word for word in lineb] for line in text]
     if out_file:
         with open(out_file, 'w') as f:
             for line in text:
