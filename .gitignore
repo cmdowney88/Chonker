@@ -2,8 +2,10 @@
 __pycache__/*
 __pycahce__
 .DS_Store
+.pytest_cache
 dist
 build
+test
 *.egg-info
-setup.py
 *.xcf
+setup.py
