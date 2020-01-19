@@ -1,12 +1,19 @@
 import pytest
+import copy
 from chonker import wrangle as wr
 
-lines = wr.get_lines('test_lines.txt')
+lines = wr.get_lines('test/test_lines.txt')
+char_line_raw = 'Thisisastringofcharacters'
+space_line_raw = 'These words  are <TAG> separated by spaces'
+tab_line_raw = 'These\twords\tare\ttab\tdelimited'
+space_line_split = ['These', 'words', 'are', '<TAG>', 'separated', 'by', 
+                    'spaces']
+tab_line_split = ['These', 'words', 'are', 'tab', 'delimited']
 
 def test_get_lines():
-    assert lines[0] == 'thisisastringofcharacters'
-    assert lines[1] == 'these words  are separated by spaces'
-    assert lines[2] == 'these\twords\tare\ttab\tdelimited'
+    assert lines[0] == char_line_raw
+    assert lines[1] == space_line_raw
+    assert lines[2] == tab_line_raw
 
 
 ws_split_lines = wr.split_lines(lines)
@@ -14,17 +21,92 @@ space_split_lines = wr.split_lines(lines, delimiter=r'\ +')
 tab_split_lines = wr.split_lines(lines, delimiter=r'\t+')
 
 def test_ws_split_lines():
-    assert ws_split_lines[0] == ['thisisastringofcharacters']
-    assert ws_split_lines[1] == ['these', 'words', 'are', 'separated', 'by', 'spaces']
-    assert ws_split_lines[2] == ['these', 'words', 'are', 'tab', 'delimited']
+    assert ws_split_lines[0] == [char_line_raw]
+    assert ws_split_lines[1] == space_line_split
+    assert ws_split_lines[2] == tab_line_split
 
 def test_space_split_lines():
-    assert space_split_lines[0] == ['thisisastringofcharacters']
-    assert space_split_lines[1] == ['these', 'words', 'are', 'separated', 'by', 'spaces']
-    assert space_split_lines[2] == ['these\twords\tare\ttab\tdelimited']
+    assert space_split_lines[0] == [char_line_raw]
+    assert space_split_lines[1] == space_line_split
+    assert space_split_lines[2] == [tab_line_raw]
 
 def test_tab_split_lines():
-    assert tab_split_lines[0] == ['thisisastringofcharacters']
-    assert tab_split_lines[1] == ['these words  are separated by spaces']
-    assert tab_split_lines[2] == ['these', 'words', 'are', 'tab', 'delimited']
+    assert tab_split_lines[0] == [char_line_raw]
+    assert tab_split_lines[1] == [space_line_raw]
+    assert tab_split_lines[2] == tab_line_split
 
+
+flattened_matrix = wr.flatten(ws_split_lines)
+concat_lines = [char_line_raw] + space_line_split + tab_line_split
+
+def test_flatten():
+    assert flattened_matrix == concat_lines
+
+
+basic_tokenized_text = wr.basic_tokenize('test/test_lines.txt')
+char_line_tok = ['thisisastringofcharacters']
+space_line_tok = ['these', 'words', 'are', '<tag>', 'separated', 'by', 'spaces']
+tab_line_tok = ['these', 'words', 'are', 'tab', 'delimited']
+
+def test_basic_tokenize():
+    assert basic_tokenized_text == [char_line_tok, space_line_tok, 
+                                    tab_line_tok]
+
+
+vocab = wr.Vocab(basic_tokenized_text)
+tok_to_id_1 = {'<unk>':0, 'thisisastringofcharacters':1, 'these':2, 'words':3,
+               'are':4, '<tag>':5, 'separated':6, 'by':7, 'spaces':8, 'tab':9,
+               'delimited':10}
+id_to_tok_1 = {0:'<unk>', 1:'thisisastringofcharacters', 2:'these', 3:'words',
+               4:'are', 5:'<tag>', 6:'separated', 7:'by', 8:'spaces', 9:'tab',
+               10:'delimited'}
+
+def test_vocab_init():
+    assert vocab.tok_to_id == tok_to_id_1
+    assert vocab.id_to_tok == id_to_tok_1
+    assert vocab.processed_sources == [basic_tokenized_text]
+
+def test_vocab_add_vocab():
+    voc = copy.deepcopy(vocab)
+    voc.add_vocab('cat')
+    voc.add_vocab(['kitty', 'cat'])
+    assert voc.tok_to_id['cat'] == 11
+    assert voc.id_to_tok[11] == 'cat'
+    assert voc.tok_to_id['kitty'] == 12
+    assert voc.id_to_tok[12] == 'kitty'
+    assert len(voc.tok_to_id) == len(voc.id_to_tok) == 13
+
+new_source = [['this', 'is', 'a', 'cat'], ['these', 'are', 'cats']]
+
+def test_vocab_add_source():
+    voc = copy.deepcopy(vocab)
+    voc.add_source(basic_tokenized_text)
+    assert voc.processed_sources == vocab.processed_sources 
+    assert vocab.processed_sources == [basic_tokenized_text]
+    voc.add_source(new_source)
+    assert voc.processed_sources == [basic_tokenized_text, new_source]
+
+def test_vocab_source_added():
+    voc = vocab.source_added(new_source)
+    assert vocab.processed_sources == [basic_tokenized_text]
+    assert voc.processed_sources == [basic_tokenized_text, new_source]
+
+def test_vocab_reset():
+    voc = copy.deepcopy(vocab)
+    voc.reset()
+    assert len(voc.tok_to_id) == len(voc.id_to_tok) == 0
+
+def test_vocab_size():
+    assert vocab.size() == len(vocab.tok_to_id) == len(vocab.id_to_tok)
+
+def test_vocab_to_ids():
+    assert vocab.to_ids('<tag>') == [5]
+    assert vocab.to_ids(['these', 'are', 'spaces']) == [2,4,8]
+    assert vocab.to_ids(['these', 'are', 'cats']) == [2,4,0]
+
+def test_vocab_to_tokens():
+    assert vocab.to_tokens(5) == ['<tag>']
+    assert vocab.to_tokens([2,4,8]) == ['these', 'are', 'spaces']
+    cat_sent = ['these', 'are', 'cats']
+    inv_cat_sent = ['these', 'are', '<unk>']
+    assert vocab.to_tokens(vocab.to_ids(cat_sent)) == inv_cat_sent
