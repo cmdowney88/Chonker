@@ -25,6 +25,13 @@ def is_tag(word):
     return word.startswith('<') and word.endswith('>')
 
 
+def chars_from_words(sequence):
+    return [
+        [char for char in word] if not is_tag(word) else [word]
+        for word in sequence
+    ]
+
+
 def basic_tokenize(in_file, out_file=None):
     '''
     Whitespace tokenize the input file, convert to lowercase and return the 
