@@ -8,4 +8,5 @@ build
 test
 *.egg-info
 *.xcf
+*.sh
 setup.py
