@@ -9,7 +9,7 @@ import copy
 
 
 def get_lines(file):
-    all_lines = [line.rstrip('\n') for line in open(file, 'r')]
+    all_lines = [line.strip('\n') for line in open(file, 'r')]
     return [line for line in all_lines if line != '']
 
 
@@ -19,6 +19,10 @@ def split_lines(lines, delimiter=r'\s+'):
 
 def flatten(multi_list):
     return list(itertools.chain.from_iterable(multi_list))
+
+
+def is_tag(word):
+    return word.startswith('<') and word.endswith('>')
 
 
 def basic_tokenize(in_file, out_file=None):
@@ -47,7 +51,14 @@ def character_tokenize(in_file, out_file=None):
     '''
     text = split_lines(get_lines(in_file))
     text = [
-        flatten([[char for char in word.lower()] for word in line]) 
+        flatten(
+            [
+                [char for char in word.lower()] 
+                if not is_tag(word) 
+                else [word.lower()] 
+                for word in line
+            ]
+        ) 
         for line in text
     ]
     if out_file:

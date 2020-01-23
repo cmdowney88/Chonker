@@ -52,6 +52,17 @@ def test_basic_tokenize():
     assert basic_tokenized_text == [char_line_tok, space_line_tok, 
                                     tab_line_tok]
 
+character_tokenized_text = wr.character_tokenize('test/test_lines.txt')
+char_line_chars = [char for char in 'thisisastringofcharacters']
+space_line_chars = [char for char in ''.join(space_line_tok[:3])]
+space_line_chars += ['<tag>'] + [char for char in ''.join(space_line_tok[4:])]
+tab_line_chars = [char for char in ''.join(tab_line_tok)]
+
+def test_character_tokenize():
+    assert character_tokenized_text[0] == char_line_chars
+    assert character_tokenized_text[1] == space_line_chars
+    assert character_tokenized_text[2] == tab_line_chars
+
 
 vocab = wr.Vocab(basic_tokenized_text)
 tok_to_id_1 = {'<unk>':0, 'thisisastringofcharacters':1, 'these':2, 'words':3,
