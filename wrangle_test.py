@@ -1,5 +1,6 @@
 import pytest
 import copy
+import os
 from chonker import wrangle as wr
 
 lines = wr.get_lines('test/test_lines.txt')
@@ -141,3 +142,4 @@ def test_vocab_save_load():
     assert voc_1.tok_to_id == voc_2.tok_to_id == vocab.tok_to_id
     assert voc_1.id_to_tok == voc_2.id_to_tok == vocab.id_to_tok
 
+    os.remove('test/test_vocab.yaml')

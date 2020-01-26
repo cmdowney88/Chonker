@@ -1,6 +1,10 @@
 import numpy as np
+import sys
 
-def acyclic_viterbi(transitions: np.ndarray):
+def acyclic_viterbi(transitions: np.ndarray, mode='max'):
+    if mode != 'max' and mode != 'min':
+        sys.exit(f'Mode {best} is not recognized. Valid modes are `max` and `min`')
+
     shape = transitions.shape
     assert len(shape) == 2
     assert shape[0] == shape[1]
@@ -13,7 +17,10 @@ def acyclic_viterbi(transitions: np.ndarray):
         candidates = transitions[:,[position-1]].T[0]
         for previous in range(position):
             candidates[previous] += trellis[previous][0]
-        trellis[position] = (np.max(candidates), np.argmax(candidates))
+        if mode == 'max':
+            trellis[position] = (np.max(candidates), np.argmax(candidates))
+        else:
+            trellis[position] = (np.min(candidates), np.argmin(candidates))
 
     position = seq_length
     previous = trellis[position][1]
