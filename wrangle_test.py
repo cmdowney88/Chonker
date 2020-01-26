@@ -127,3 +127,17 @@ def test_vocab_to_tokens():
     cat_sent = ['these', 'are', 'cats']
     inv_cat_sent = ['these', 'are', '<unk>']
     assert vocab.to_tokens(vocab.to_ids(cat_sent)) == inv_cat_sent
+
+def test_vocab_save_load():
+    voc_1 = copy.deepcopy(vocab)
+    voc_2 = wr.Vocab(unk_token='<u>')
+    
+    voc_1.save('test/test_vocab.yaml')
+    assert voc_1.tok_to_id == vocab.tok_to_id
+    assert voc_1.id_to_tok == vocab.id_to_tok
+
+    voc_1.load('test/test_vocab.yaml')
+    voc_2.load('test/test_vocab.yaml')
+    assert voc_1.tok_to_id == voc_2.tok_to_id == vocab.tok_to_id
+    assert voc_1.id_to_tok == voc_2.id_to_tok == vocab.id_to_tok
+

@@ -6,6 +6,7 @@ of data being fed into statistical and machine learning models
 import re
 import itertools
 import copy
+import yaml
 
 
 def get_lines(file):
@@ -83,7 +84,7 @@ class Vocab():
     '''
     
     def __init__(self, 
-                 source,
+                 source=None,
                  unk_token="<unk>",
                  other_tokens=None):
         '''Initialize `Vocab` object from a text'''
@@ -98,7 +99,8 @@ class Vocab():
         self.unk_id = self.tok_to_id[self.unk_token]
 
         self.processed_sources = []
-        self.add_source(source)
+        if source:
+            self.add_source(source)
 
     def add_vocab(self, tokens):
         '''Add vocabulary items directly as a string or list of strings'''
@@ -167,19 +169,29 @@ class Vocab():
                 output.append(self.id_to_tok[item])
         return output
 
-    def save(self, out_file, explicit_id=False):
+    def save(self, out_file):
         '''
-        Save the `Vocab` mapping to a text file. The ID of the token 
-        corresponds to the line on which it is printed (starting at zero). If 
-        `explicit_id` is set to `True`, print the ID after the token, 
-        separated by a space
+        Save the `Vocab` mapping to a yaml file. By default, the yaml object
+        will be sorted by key (the token id). NOTE: `processed_sources`
+        attribute will not be saved, and so cannot be recovered when loading
+        from a saved `Vocab`
         '''
         with open(out_file, 'w') as f:
-            items = [(key, self.tok_to_id[key]) for key in self.tok_to_id]
-            items.sort(key=lambda x: x[1])
-            if explicit_id:
-                for item in items:
-                    print(f"{item[0]} {item[1]}", file=f)
-            else:
-                for item in items:
-                    print(item[0], file=f)
+            yaml.dump(self.id_to_tok, f)
+    
+    def load(self, in_file):
+        '''
+        Load the `Vocab` mapping from a saved yaml file. NOTE: loading a saved
+        Vocab will reset the current object, including any special tokens. The
+        unk token is always presumed to be at index 0
+        '''
+        self.processed_sources = []
+        self.unk_id = None
+        self.unk_token = None
+        self.tok_to_id = {}
+        with open(in_file, 'r') as f:
+            self.id_to_tok = yaml.load(f)
+        for id in self.id_to_tok:
+            self.tok_to_id[self.id_to_tok[id]] = id
+        self.unk_id = 0
+        self.unk_token = self.id_to_tok[0]
