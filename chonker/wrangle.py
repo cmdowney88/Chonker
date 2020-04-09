@@ -26,6 +26,13 @@ def is_tag(word):
     return word.startswith('<') and word.endswith('>')
 
 
+def case(string, preserve=False):
+    if preserve:
+        return string
+    else:
+        return string.lower()
+
+
 def chars_from_words(sequence):
     return [
         [char for char in word] if not is_tag(word) else [word]
@@ -33,7 +40,7 @@ def chars_from_words(sequence):
     ]
 
 
-def basic_tokenize(in_file, out_file=None):
+def basic_tokenize(in_file, preserve_case=False, out_file=None):
     '''
     Whitespace tokenize the input file, convert to lowercase and return the 
     tokenized text. If an `out_file` is given, print the tokenized text to 
@@ -41,7 +48,7 @@ def basic_tokenize(in_file, out_file=None):
     '''
     text = split_lines(get_lines(in_file))
     text = [
-        [word.lower() for word in line] 
+        [case(word, preserve_case) for word in line] 
         for line in text
     ]
     if out_file:
@@ -52,7 +59,7 @@ def basic_tokenize(in_file, out_file=None):
         return text
 
 
-def character_tokenize(in_file, out_file=None):
+def character_tokenize(in_file, preserve_case=False, out_file=None):
     '''
     Character tokenize the input file, lowercasing and exlcuding whitespace. 
     If an `out_file` is given print the tokenized text to this file
@@ -61,9 +68,9 @@ def character_tokenize(in_file, out_file=None):
     text = [
         flatten(
             [
-                [char for char in word.lower()] 
+                [char for char in case(word, preserve_case)] 
                 if not is_tag(word) 
-                else [word.lower()] 
+                else [case(word, preserve_case)] 
                 for word in line
             ]
         ) 

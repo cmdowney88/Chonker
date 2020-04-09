@@ -11,7 +11,7 @@ def acyclic_viterbi(transitions: np.ndarray, mode='max'):
     seq_length = shape[0]
 
     trellis = {}
-    trellis[0] = (0.0, 'bos')
+    trellis[0] = (0.0, -1)
     for position in range(1,seq_length+1):
         trellis[position] = None
         candidates = transitions[:,[position-1]].T[0]
