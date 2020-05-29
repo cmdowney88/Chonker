@@ -84,6 +84,16 @@ def character_tokenize(in_file, preserve_case=False, out_file=None):
         return text
 
 
+def sort_unsort_pmts(lst):
+    sort_zip = list(zip(lst, [x for x in range(len(lst))]))
+    sort_zip.sort(key=lambda x:x[0])
+    sort_pmt = [x[1] for x in sort_zip]
+    unsort_zip = list(zip(sort_pmt, [x for x in range(len(sort_pmt))]))
+    unsort_zip.sort(key=lambda x:x[0])
+    unsort_pmt = [x[1] for x in unsort_zip]
+    return sort_pmt, unsort_pmt
+
+
 class Vocab():
     '''
     A bi-directional mapping between the string tokens and integer IDs, 

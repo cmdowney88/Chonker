@@ -1,14 +1,19 @@
 import numpy as np
 import sys
 
-def acyclic_viterbi(transitions: np.ndarray, mode='max'):
+def acyclic_viterbi(transitions: np.ndarray, mode='max', length=None):
     if mode != 'max' and mode != 'min':
         sys.exit(f'Mode {best} is not recognized. Valid modes are `max` and `min`')
 
     shape = transitions.shape
     assert len(shape) == 2
     assert shape[0] == shape[1]
-    seq_length = shape[0]
+
+    if length:
+        assert length <= shape[0]
+        seq_length = length
+    else:
+        seq_length = shape[0]
 
     trellis = {}
     trellis[0] = (0.0, -1)
