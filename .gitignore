@@ -9,4 +9,5 @@ test
 *.egg-info
 *.xcf
 *.sh
+*.cfg
 setup.py
