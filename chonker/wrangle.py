@@ -15,7 +15,7 @@ def get_lines(file):
 
 
 def split_lines(lines, delimiter=r'\s+'):
-    return [re.split(delimiter, line) for line in lines]
+    return [re.split(delimiter, tokenize_tags(line)) for line in lines]
 
 
 def flatten(multi_list):
@@ -24,6 +24,10 @@ def flatten(multi_list):
 
 def is_tag(word):
     return word.startswith('<') and word.endswith('>')
+
+
+def tokenize_tags(string):
+    return re.sub(r"(\S*)(<[a-z]*>)(\S*)", r"\1 \2 \3", string)
 
 
 def case(string, preserve=False):
@@ -47,10 +51,7 @@ def basic_tokenize(in_file, preserve_case=False, out_file=None):
     this file
     '''
     text = split_lines(get_lines(in_file))
-    text = [
-        [case(word, preserve_case) for word in line] 
-        for line in text
-    ]
+    text = [[case(word, preserve_case) for word in line] for line in text]
     if out_file:
         with open(out_file, 'w') as f:
             for line in text:
@@ -68,16 +69,14 @@ def character_tokenize(in_file, preserve_case=False, out_file=None):
     text = [
         flatten(
             [
-                [char for char in case(word, preserve_case)] 
-                if not is_tag(word) 
-                else [case(word, preserve_case)] 
+                [char for char in case(word, preserve_case)]
+                if not is_tag(word) else [case(word, preserve_case)]
                 for word in line
             ]
-        ) 
-        for line in text
+        ) for line in text
     ]
     if out_file:
-        with open(out_file, 'w') as f: 
+        with open(out_file, 'w') as f:
             for line in text:
                 print(''.join(line), file=f)
     else:
@@ -86,10 +85,10 @@ def character_tokenize(in_file, preserve_case=False, out_file=None):
 
 def sort_unsort_pmts(lst):
     sort_zip = list(zip(lst, [x for x in range(len(lst))]))
-    sort_zip.sort(key=lambda x:x[0])
+    sort_zip.sort(key=lambda x: x[0])
     sort_pmt = [x[1] for x in sort_zip]
     unsort_zip = list(zip(sort_pmt, [x for x in range(len(sort_pmt))]))
-    unsort_zip.sort(key=lambda x:x[0])
+    unsort_zip.sort(key=lambda x: x[0])
     unsort_pmt = [x[1] for x in unsort_zip]
     return sort_pmt, unsort_pmt
 
@@ -99,11 +98,7 @@ class Vocab():
     A bi-directional mapping between the string tokens and integer IDs, 
     initialized from a text in the form of a list of lists
     '''
-    
-    def __init__(self, 
-                 source=None,
-                 unk_token="<unk>",
-                 other_tokens=None):
+    def __init__(self, source=None, unk_token="<unk>", other_tokens=None):
         '''Initialize `Vocab` object from a text'''
 
         self.unk_token = unk_token
@@ -121,7 +116,8 @@ class Vocab():
 
     def add_vocab(self, tokens):
         '''Add vocabulary items directly as a string or list of strings'''
-        if type(tokens) != list: tokens = [tokens]
+        if type(tokens) != list:
+            tokens = [tokens]
         for token in tokens:
             if token not in self.tok_to_id:
                 index = len(self.tok_to_id)
@@ -163,7 +159,8 @@ class Vocab():
         Take in a string or list of string tokens and return the list of their 
         corresponding integer IDs
         '''
-        if type(tokens) != list: tokens = [tokens]
+        if type(tokens) != list:
+            tokens = [tokens]
         output = []
         for token in tokens:
             if token not in self.tok_to_id:
@@ -177,7 +174,8 @@ class Vocab():
         Take in an integer ID or list of IDs and return the list of their 
         corresponding string tokens
         '''
-        if type(ids) != list: ids = [ids]
+        if type(ids) != list:
+            ids = [ids]
         output = []
         for item in ids:
             if item not in self.id_to_tok:
@@ -195,7 +193,7 @@ class Vocab():
         '''
         with open(out_file, 'w') as f:
             yaml.dump(self.id_to_tok, f)
-    
+
     def load(self, in_file):
         '''
         Load the `Vocab` mapping from a saved yaml file. NOTE: loading a saved
