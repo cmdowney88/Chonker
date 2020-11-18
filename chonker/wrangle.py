@@ -17,8 +17,8 @@ def get_lines(file):
 def tokenize_tags(string):
     string = re.sub(r"(<[A-Za-z0-9]*>)(?=<[A-Za-z0-9]*>)", r"\1 ", string)
     string = re.sub(r"(\S+)(<[A-Za-z0-9]*>)(\s+|$)", r"\1 \2\3", string)
-    return re.sub(r"(^|\s+)(<[A-Za-z0-9]*>)(\S+)", r"\1\2 \3", string)
-
+    string = re.sub(r"(^|\s+)(<[A-Za-z0-9]*>)(\S+)", r"\1\2 \3", string)
+    return re.sub(r"(?=\S+)(<[A-Za-z0-9]*>)(?=\S+)", r" \1 ", string)
 
 def split_lines(lines, delimiter=r'\s+', split_tags=False):
     if split_tags:

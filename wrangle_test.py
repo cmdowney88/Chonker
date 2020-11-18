@@ -14,7 +14,7 @@ space_line_split = [
 tab_line_split = ['These', 'words', 'are', 'tab', 'delimited']
 tag_line_split = [
     '<PUNC>These', 'are', '<PUNC>edge', 'cases', 'for', 'tags<PUNC>',
-    '<CUR>8<PUNC><PUNC><PUNC>'
+    '1<PUNC>2', '<CUR>8<PUNC><PUNC><PUNC>'
 ]
 
 
@@ -63,7 +63,7 @@ space_line_tok = ['these', 'words', 'are', '<tag>', 'separated', 'by', 'spaces']
 tab_line_tok = ['these', 'words', 'are', 'tab', 'delimited']
 tag_line_tok = [
     '<punc>these', 'are', '<punc>edge', 'cases', 'for', 'tags<punc>',
-    '<cur>8<punc><punc><punc>'
+    '1<punc>2', '<cur>8<punc><punc><punc>'
 ]
 
 
@@ -80,7 +80,7 @@ space_line_chars += ['<tag>'] + [char for char in ''.join(space_line_tok[4:])]
 tag_line_chars = [
     '<punc>', 't', 'h', 'e', 's', 'e', 'a', 'r', 'e', '<punc>', 'e', 'd', 'g',
     'e', 'c', 'a', 's', 'e', 's', 'f', 'o', 'r', 't', 'a', 'g', 's', '<punc>',
-    '<cur>', '8', '<punc>', '<punc>', '<punc>'
+    '1', '<punc>', '2', '<cur>', '8', '<punc>', '<punc>', '<punc>'
 ]
 tab_line_chars = [char for char in ''.join(tab_line_tok)]
 
@@ -120,7 +120,8 @@ tok_to_id_1 = {
     'cases': 13,
     'for': 14,
     'tags<punc>': 15,
-    '<cur>8<punc><punc><punc>': 16
+    '1<punc>2': 16,
+    '<cur>8<punc><punc><punc>': 17
 }
 id_to_tok_1 = {
     0: '<unk>',
@@ -139,7 +140,8 @@ id_to_tok_1 = {
     13: 'cases',
     14: 'for',
     15: 'tags<punc>',
-    16: '<cur>8<punc><punc><punc>'
+    16: '1<punc>2',
+    17: '<cur>8<punc><punc><punc>'
 }
 
 
@@ -153,11 +155,11 @@ def test_vocab_add_vocab():
     voc = copy.deepcopy(vocab)
     voc.add_vocab('cat')
     voc.add_vocab(['kitty', 'cat'])
-    assert voc.tok_to_id['cat'] == 17
-    assert voc.id_to_tok[17] == 'cat'
-    assert voc.tok_to_id['kitty'] == 18
-    assert voc.id_to_tok[18] == 'kitty'
-    assert len(voc.tok_to_id) == len(voc.id_to_tok) == 19
+    assert voc.tok_to_id['cat'] == 18
+    assert voc.id_to_tok[18] == 'cat'
+    assert voc.tok_to_id['kitty'] == 19
+    assert voc.id_to_tok[19] == 'kitty'
+    assert len(voc.tok_to_id) == len(voc.id_to_tok) == 20
 
 
 new_source = [['this', 'is', 'a', 'cat'], ['these', 'are', 'cats']]
