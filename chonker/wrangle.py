@@ -14,8 +14,16 @@ def get_lines(file):
     return [line for line in all_lines if line != '']
 
 
-def split_lines(lines, delimiter=r'\s+'):
-    return [re.split(delimiter, tokenize_tags(line)) for line in lines]
+def tokenize_tags(string):
+    string = re.sub(r"(<[A-Za-z0-9]*>)(?=<[A-Za-z0-9]*>)", r"\1 ", string)
+    string = re.sub(r"(\S+)(<[A-Za-z0-9]*>)(\s+|$)", r"\1 \2\3", string)
+    return re.sub(r"(^|\s+)(<[A-Za-z0-9]*>)(\S+)", r"\1\2 \3", string)
+
+
+def split_lines(lines, delimiter=r'\s+', split_tags=False):
+    if split_tags:
+        lines = [tokenize_tags(line) for line in lines]
+    return [re.split(delimiter, line) for line in lines]
 
 
 def flatten(multi_list):
@@ -24,10 +32,6 @@ def flatten(multi_list):
 
 def is_tag(word):
     return word.startswith('<') and word.endswith('>')
-
-
-def tokenize_tags(string):
-    return re.sub(r"(\S*)(<[a-z]*>)(\S*)", r"\1 \2 \3", string)
 
 
 def case(string, preserve=False):
@@ -44,13 +48,15 @@ def chars_from_words(sequence):
     ]
 
 
-def basic_tokenize(in_file, preserve_case=False, out_file=None):
+def basic_tokenize(
+    in_file, preserve_case=False, split_tags=False, out_file=None
+):
     '''
     Whitespace tokenize the input file, convert to lowercase and return the 
     tokenized text. If an `out_file` is given, print the tokenized text to 
     this file
     '''
-    text = split_lines(get_lines(in_file))
+    text = split_lines(get_lines(in_file), split_tags=split_tags)
     text = [[case(word, preserve_case) for word in line] for line in text]
     if out_file:
         with open(out_file, 'w') as f:
@@ -60,12 +66,14 @@ def basic_tokenize(in_file, preserve_case=False, out_file=None):
         return text
 
 
-def character_tokenize(in_file, preserve_case=False, out_file=None):
+def character_tokenize(
+    in_file, preserve_case=False, split_tags=True, out_file=None
+):
     '''
     Character tokenize the input file, lowercasing and exlcuding whitespace. 
     If an `out_file` is given print the tokenized text to this file
     '''
-    text = split_lines(get_lines(in_file))
+    text = split_lines(get_lines(in_file), split_tags=split_tags)
     text = [
         flatten(
             [
