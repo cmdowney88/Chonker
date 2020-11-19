@@ -213,7 +213,7 @@ class Vocab():
         self.unk_token = None
         self.tok_to_id = {}
         with open(in_file, 'r') as f:
-            self.id_to_tok = yaml.load(f)
+            self.id_to_tok = yaml.load(f, Loader=yaml.SafeLoader)
         for id in self.id_to_tok:
             self.tok_to_id[self.id_to_tok[id]] = id
         self.unk_id = 0
