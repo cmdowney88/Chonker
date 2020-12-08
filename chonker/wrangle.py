@@ -49,7 +49,8 @@ def chars_from_words(sequence):
 
 
 def basic_tokenize(
-    in_file, preserve_case=False, split_tags=False, out_file=None
+    in_file, preserve_case=False, split_tags=False, edge_tokens=False, 
+    out_file=None
 ):
     '''
     Whitespace tokenize the input file, convert to lowercase and return the 
@@ -58,6 +59,8 @@ def basic_tokenize(
     '''
     text = split_lines(get_lines(in_file), split_tags=split_tags)
     text = [[case(word, preserve_case) for word in line] for line in text]
+    if edge_tokens:
+        text = [['<bos>'] + line + ['<eos>'] for line in text]
     if out_file:
         with open(out_file, 'w') as f:
             for line in text:
@@ -67,7 +70,8 @@ def basic_tokenize(
 
 
 def character_tokenize(
-    in_file, preserve_case=False, split_tags=True, out_file=None
+    in_file, preserve_case=False, split_tags=True, edge_tokens=False,
+    out_file=None
 ):
     '''
     Character tokenize the input file, lowercasing and exlcuding whitespace. 
@@ -83,6 +87,8 @@ def character_tokenize(
             ]
         ) for line in text
     ]
+    if edge_tokens:
+        text = [['<bos>'] + line + ['<eos>'] for line in text]
     if out_file:
         with open(out_file, 'w') as f:
             for line in text:

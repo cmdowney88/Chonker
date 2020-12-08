@@ -73,6 +73,20 @@ def test_basic_tokenize():
     ]
 
 
+basic_tokenized_with_edges = wr.basic_tokenize(
+    'test/test_lines.txt', edge_tokens=True
+)
+tok_target_with_edges = [
+    ['<bos>'] + line + ['<eos>']
+    for line in [char_line_tok, space_line_tok, tab_line_tok, tag_line_tok]
+]
+
+
+def test_tokenize_with_edges():
+    assert basic_tokenized_with_edges == tok_target_with_edges
+    print(basic_tokenized_with_edges)
+
+
 character_tokenized_text = wr.character_tokenize('test/test_lines.txt')
 char_line_chars = [char for char in 'thisisastringofcharacters']
 space_line_chars = [char for char in ''.join(space_line_tok[:3])]
