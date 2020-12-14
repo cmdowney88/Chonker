@@ -65,6 +65,9 @@ tag_line_tok = [
     '<punc>these', 'are', '<punc>edge', 'cases', 'for', 'tags<punc>',
     '1<punc>2', '<cur>8<punc><punc><punc>'
 ]
+gold_basic_tokenized_text = [
+    char_line_tok, space_line_tok, tab_line_tok, tag_line_tok
+]
 
 
 def test_basic_tokenize():
@@ -84,7 +87,6 @@ tok_target_with_edges = [
 
 def test_tokenize_with_edges():
     assert basic_tokenized_with_edges == tok_target_with_edges
-    print(basic_tokenized_with_edges)
 
 
 character_tokenized_text = wr.character_tokenize('test/test_lines.txt')
@@ -114,6 +116,126 @@ chars_from_space_line = [
 
 def test_chars_from_words():
     assert wr.chars_from_words(space_line_tok[:4]) == chars_from_space_line
+
+
+ngram_data = wr.get_ngrams(gold_basic_tokenized_text, 2)
+
+ngram_counts = {
+    ('thisisastringofcharacters', ): 1,
+    ('these', ): 2,
+    ('words', ): 2,
+    ('are', ): 3,
+    ('<tag>', ): 1,
+    ('separated', ): 1,
+    ('by', ): 1,
+    ('spaces', ): 1,
+    ('tab', ): 1,
+    ('delimited', ): 1,
+    ('<punc>these', ): 1,
+    ('<punc>edge', ): 1,
+    ('cases', ): 1,
+    ('for', ): 1,
+    ('tags<punc>', ): 1,
+    ('1<punc>2', ): 1,
+    ('<cur>8<punc><punc><punc>', ): 1,
+    ('these', 'words'): 2,
+    ('words', 'are'): 2,
+    ('are', '<tag>'): 1,
+    ('<tag>', 'separated'): 1,
+    ('separated', 'by'): 1,
+    ('by', 'spaces'): 1,
+    ('are', 'tab'): 1,
+    ('tab', 'delimited'): 1,
+    ('<punc>these', 'are'): 1,
+    ('are', '<punc>edge'): 1,
+    ('<punc>edge', 'cases'): 1,
+    ('cases', 'for'): 1,
+    ('for', 'tags<punc>'): 1,
+    ('tags<punc>', '1<punc>2'): 1,
+    ('1<punc>2', '<cur>8<punc><punc><punc>'): 1
+}
+
+ngram_to_id = {
+    ('thisisastringofcharacters', ): 0,
+    ('these', ): 1,
+    ('words', ): 2,
+    ('are', ): 3,
+    ('<tag>', ): 4,
+    ('separated', ): 5,
+    ('by', ): 6,
+    ('spaces', ): 7,
+    ('tab', ): 8,
+    ('delimited', ): 9,
+    ('<punc>these', ): 10,
+    ('<punc>edge', ): 11,
+    ('cases', ): 12,
+    ('for', ): 13,
+    ('tags<punc>', ): 14,
+    ('1<punc>2', ): 15,
+    ('<cur>8<punc><punc><punc>', ): 16,
+    ('these', 'words'): 17,
+    ('words', 'are'): 18,
+    ('are', '<tag>'): 19,
+    ('<tag>', 'separated'): 20,
+    ('separated', 'by'): 21,
+    ('by', 'spaces'): 22,
+    ('are', 'tab'): 23,
+    ('tab', 'delimited'): 24,
+    ('<punc>these', 'are'): 25,
+    ('are', '<punc>edge'): 26,
+    ('<punc>edge', 'cases'): 27,
+    ('cases', 'for'): 28,
+    ('for', 'tags<punc>'): 29,
+    ('tags<punc>', '1<punc>2'): 30,
+    ('1<punc>2', '<cur>8<punc><punc><punc>'): 31
+}
+
+id_to_ngram = {
+    0: ('thisisastringofcharacters', ),
+    1: ('these', ),
+    2: ('words', ),
+    3: ('are', ),
+    4: ('<tag>', ),
+    5: ('separated', ),
+    6: ('by', ),
+    7: ('spaces', ),
+    8: ('tab', ),
+    9: ('delimited', ),
+    10: ('<punc>these', ),
+    11: ('<punc>edge', ),
+    12: ('cases', ),
+    13: ('for', ),
+    14: ('tags<punc>', ),
+    15: ('1<punc>2', ),
+    16: ('<cur>8<punc><punc><punc>', ),
+    17: ('these', 'words'),
+    18: ('words', 'are'),
+    19: ('are', '<tag>'),
+    20: ('<tag>', 'separated'),
+    21: ('separated', 'by'),
+    22: ('by', 'spaces'),
+    23: ('are', 'tab'),
+    24: ('tab', 'delimited'),
+    25: ('<punc>these', 'are'),
+    26: ('are', '<punc>edge'),
+    27: ('<punc>edge', 'cases'),
+    28: ('cases', 'for'),
+    29: ('for', 'tags<punc>'),
+    30: ('tags<punc>', '1<punc>2'),
+    31: ('1<punc>2', '<cur>8<punc><punc><punc>')
+}
+
+
+def test_ngram_counts():
+    assert ngram_counts == ngram_data[0]
+
+
+def test_ngram_to_id():
+    assert ngram_to_id == ngram_data[1][0]
+
+
+def test_id_to_ngram():
+    assert id_to_ngram == ngram_data[1][1]
 
 
 vocab = wr.Vocab(basic_tokenized_text)

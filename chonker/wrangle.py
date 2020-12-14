@@ -107,6 +107,34 @@ def sort_unsort_pmts(lst):
     return sort_pmt, unsort_pmt
 
 
+def get_ngrams(corpus, max_length, min_count=1):
+    counts = {}
+
+    for n in range(1, max_length+1):
+        for sentence in corpus:
+            sentence_length = len(sentence)
+            num_ngrams = sentence_length + 1 - n
+            for i in range(num_ngrams):
+                ngram = tuple(sentence[i:i+n])
+                if ngram not in counts:
+                    counts[ngram] = 1
+                else:
+                    counts[ngram] += 1
+
+    for ngram in counts.keys():
+        if counts[ngram] < min_count:
+            del counts[ngram]
+
+    ngram_to_id = {}
+    id_to_ngram = {}
+    for ngram in counts.keys():
+        index = len(ngram_to_id)
+        ngram_to_id[ngram] = index
+        id_to_ngram[index] = ngram
+
+    return (counts, (ngram_to_id, id_to_ngram))
+
+
 class Vocab():
     '''
     A bi-directional mapping between the string tokens and integer IDs, 
