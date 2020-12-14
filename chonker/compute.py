@@ -5,7 +5,7 @@ import sys
 def acyclic_viterbi(transitions: np.ndarray, mode='max', length=None):
     if mode != 'max' and mode != 'min':
         sys.exit(
-            f'Mode {best} is not recognized. Valid modes are `max` and `min`'
+            f'Mode {mode} is not recognized. Valid modes are `max` and `min`'
         )
 
     shape = transitions.shape
