@@ -121,9 +121,12 @@ def get_ngrams(corpus, max_length, min_count=1):
                 else:
                     counts[ngram] += 1
 
+    to_delete = []
     for ngram in counts.keys():
         if counts[ngram] < min_count:
-            del counts[ngram]
+            to_delete.append(ngram)
+    for ngram in to_delete:
+        del counts[ngram]
 
     ngram_to_id = {}
     id_to_ngram = {}
