@@ -136,7 +136,7 @@ def _lr_lambda(
         )
     elif decay == 'exponential':
         decay_lambda = lambda step: (
-            gamma**((step + 1 - num_warmup_steps) / gamma_life)
+            gamma**((step + 1 - num_warmup_steps) / gamma_steps)
         )
     else:
         raise ValueError(f'Decay mode {decay} is not valid')
