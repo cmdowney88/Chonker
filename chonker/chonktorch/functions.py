@@ -32,7 +32,7 @@ def shuffle_unshuffle_pmts(length):
     random.shuffle(shuffle_pmt)
     unshuffle_zip = list(zip(shuffle_pmt, [x for x in range(length)]))
     unshuffle_zip.sort(key=lambda x: x[0])
-    unshuffle_pmt = [x[1] for x in unsort_zip]
+    unshuffle_pmt = [x[1] for x in unshuffle_zip]
     return shuffle_pmt, unshuffle_pmt
 
 
