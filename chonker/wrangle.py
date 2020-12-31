@@ -3,34 +3,43 @@ A module containing convenience classes and functions for the pre-processing
 of data being fed into statistical and machine learning models
 '''
 
-import re
-import itertools
 import copy
+import itertools
+import re
 import yaml
 
 
 def get_lines(file):
+    '''
+    Return all lines from a file stripping newline characters and ignoring
+    empty lines
+    '''
     all_lines = [line.strip('\n') for line in open(file, 'r')]
     return [line for line in all_lines if line != '']
 
 
 def tokenize_tags(string):
+    '''Tokenize <tags> away from surrounding non-whitespace characters'''
     string = re.sub(r"(<[A-Za-z0-9]*>)(?=<[A-Za-z0-9]*>)", r"\1 ", string)
     string = re.sub(r"(\S+)(<[A-Za-z0-9]*>)(\s+|$)", r"\1 \2\3", string)
     string = re.sub(r"(^|\s+)(<[A-Za-z0-9]*>)(\S+)", r"\1\2 \3", string)
     return re.sub(r"(?=\S+)(<[A-Za-z0-9]*>)(?=\S+)", r" \1 ", string)
 
+
 def split_lines(lines, delimiter=r'\s+', split_tags=False):
+    '''Split a list of strings based on a regex delimiter'''
     if split_tags:
         lines = [tokenize_tags(line) for line in lines]
     return [re.split(delimiter, line) for line in lines]
 
 
 def flatten(multi_list):
+    '''Flatten a list of lists into a single list'''
     return list(itertools.chain.from_iterable(multi_list))
 
 
 def is_tag(word):
+    '''Define a word as a tag if it starts and ends with angle brackets'''
     return word.startswith('<') and word.endswith('>')
 
 
@@ -42,6 +51,10 @@ def case(string, preserve=False):
 
 
 def chars_from_words(sequence):
+    '''
+    From a list of tokenized words, return the same list with the words
+    sub-tokenized into characters, unless the word is a tag
+    '''
     return [
         [char for char in word] if not is_tag(word) else [word]
         for word in sequence
@@ -49,13 +62,17 @@ def chars_from_words(sequence):
 
 
 def basic_tokenize(
-    in_file, preserve_case=False, split_tags=False, edge_tokens=False, 
+    in_file,
+    preserve_case=False,
+    split_tags=False,
+    edge_tokens=False,
     out_file=None
 ):
     '''
     Whitespace tokenize the input file, convert to lowercase and return the 
-    tokenized text. If an `out_file` is given, print the tokenized text to 
-    this file
+    tokenized text
+
+    If an `out_file` is given, print the tokenized text to this file
     '''
     text = split_lines(get_lines(in_file), split_tags=split_tags)
     text = [[case(word, preserve_case) for word in line] for line in text]
@@ -70,11 +87,15 @@ def basic_tokenize(
 
 
 def character_tokenize(
-    in_file, preserve_case=False, split_tags=True, edge_tokens=False,
+    in_file,
+    preserve_case=False,
+    split_tags=True,
+    edge_tokens=False,
     out_file=None
 ):
     '''
-    Character tokenize the input file, lowercasing and exlcuding whitespace. 
+    Character tokenize the input file, lowercasing and exlcuding whitespace
+    
     If an `out_file` is given print the tokenized text to this file
     '''
     text = split_lines(get_lines(in_file), split_tags=split_tags)
@@ -97,25 +118,20 @@ def character_tokenize(
         return text
 
 
-def sort_unsort_pmts(lst, descending=False):
-    sort_zip = list(zip(lst, [x for x in range(len(lst))]))
-    sort_zip.sort(key=lambda x: x[0], reverse=descending)
-    sort_pmt = [x[1] for x in sort_zip]
-    unsort_zip = list(zip(sort_pmt, [x for x in range(len(sort_pmt))]))
-    unsort_zip.sort(key=lambda x: x[0])
-    unsort_pmt = [x[1] for x in unsort_zip]
-    return sort_pmt, unsort_pmt
-
-
 def get_ngrams(corpus, max_length, min_count=1):
+    '''
+    Get 1-to-n-grams over a corpus of input sentences, discarding entries if
+    they occur less than `min_count` times, as well as bidrectional dictionary
+    of ngrams and indices
+    '''
     counts = {}
 
-    for n in range(1, max_length+1):
+    for n in range(1, max_length + 1):
         for sentence in corpus:
             sentence_length = len(sentence)
             num_ngrams = sentence_length + 1 - n
             for i in range(num_ngrams):
-                ngram = tuple(sentence[i:i+n])
+                ngram = tuple(sentence[i:i + n])
                 if ngram not in counts:
                     counts[ngram] = 1
                 else:
@@ -171,7 +187,7 @@ class Vocab():
 
     def add_source(self, source):
         '''
-        Iterate through the source texts in `to_tokenize`. If they have not 
+        Iterate through the source texts in `to_tokenize` If they have not 
         yet been input, tokenize them and add their vocabulary
         '''
         if source not in self.processed_sources:
@@ -231,19 +247,21 @@ class Vocab():
 
     def save(self, out_file):
         '''
-        Save the `Vocab` mapping to a yaml file. By default, the yaml object
-        will be sorted by key (the token id). NOTE: `processed_sources`
-        attribute will not be saved, and so cannot be recovered when loading
-        from a saved `Vocab`
+        Save the `Vocab` mapping to a yaml file
+
+        By default, the yaml object will be sorted by key (the token id). NOTE:
+        `processed_sources` attribute will not be saved, and so cannot be
+        recovered when loading from a saved `Vocab`
         '''
         with open(out_file, 'w') as f:
             yaml.dump(self.id_to_tok, f)
 
     def load(self, in_file):
         '''
-        Load the `Vocab` mapping from a saved yaml file. NOTE: loading a saved
-        Vocab will reset the current object, including any special tokens. The
-        unk token is always presumed to be at index 0
+        Load the `Vocab` mapping from a saved yaml file
+
+        NOTE: loading a saved Vocab will reset the current object, including any
+        special tokens. The unk token is always presumed to be at index 0
         '''
         self.processed_sources = []
         self.unk_id = None
