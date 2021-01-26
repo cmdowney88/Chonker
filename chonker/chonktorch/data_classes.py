@@ -35,6 +35,21 @@ class VariableLengthDataset(Dataset):
         drop_final (optional): Whether to drop all final sequences that do not
             add up to a full batch (with gradient accumulation). Default: 
             ``True``
+        max_padding (optional): The maximum number of padding tokens allowed at
+            the end of any sequence (padding and attention masks can interact
+            in ways that throw errors in PyTorch transformer implementations).
+            Default: ``None``
+        max_pad_strategy (optional): The strategy to deal with batches that
+            require more padding than the maximum. If ``split``, no sequences
+            will be dropped from the dataset, and the batch will simply be split
+            at the last point at which the number of pad tokens is legal. NOTE:
+            this may lead to more inconsistent batch sizes. If ``soft_drop``,
+            the batch will be dropped up until the length differential that
+            causes the large number of pad tokens, and batching will continue
+            from that index. If ``hard_drop``, the entire candidate batch will
+            be dropped. This may be useful if batching is being done by
+            sequences and only complete batch sizes are acceptable (i.e.
+            ``drop_final`` is ``True``). Default: ``soft_drop``
     '''
     def __init__(
         self,
@@ -43,15 +58,23 @@ class VariableLengthDataset(Dataset):
         pad_value: float,
         batch_by: str = 'sequences',
         gradient_accumulation: int = 1,
-        drop_final: bool = True
+        drop_final: bool = False,
+        max_padding: int = None,
+        max_pad_strategy: str = 'soft_drop'
     ) -> Dataset:
 
         self.batch_size = batch_size
         self.pad_value = pad_value
+        self.max_padding = max_padding
+        self.max_pad_strategy = max_pad_strategy
 
-        # Make sure that the batch_by parameter is a recognized value
+        # Make sure that all string parameters have recognized values
         if batch_by not in ['sequences', 'tokens']:
             raise ValueError(f'Batch-by option {self.batch_by} is not valid')
+        if max_pad_strategy not in ['split', 'soft_drop', 'hard_drop']:
+            raise ValueError(
+                f'Max pad strategy {self.max_pad_strategy} is not valid'
+            )
 
         # If batches are formed by a set number of sequences and drop_final is
         # True, calculate the total number of full batches and drop leftover
@@ -84,7 +107,33 @@ class VariableLengthDataset(Dataset):
                 current_length = data[current_index][1]
                 seqs_per_batch = max(batch_size // current_length, 1)
                 next_index = current_index + seqs_per_batch
+
             next_index = min(self.total_num_instances, next_index)
+            
+            # Some combinations of padding and attention patterns in pytorch
+            # cause an error during forward passes, so it is sometimes necessary
+            # to restrict the number of pad tokens allowed at the end of a
+            # sequence
+            if self.max_padding:
+                legal_next_index = current_index + 1
+                current_length = data[current_index][1]
+                for i in range(current_index + 1, next_index):
+                    length_difference = (
+                        current_length - data[i][1] 
+                    )
+                    if length_difference > max_padding:
+                        break
+                    else:
+                        legal_next_index = i + 1
+                if (legal_next_index < next_index):
+                    if self.max_pad_strategy == 'hard_drop':
+                        current_index = next_index
+                        continue
+                    elif self.max_pad_strategy == 'soft_drop':
+                        current_index = legal_next_index
+                        continue
+                next_index = legal_next_index
+
             new_batch = self.pad_collate(data[current_index:next_index])
             batched_data.append(new_batch)
             current_index = next_index
