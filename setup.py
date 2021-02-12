@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 setuptools.setup(
     name='chonker',
-    version='1.1.0',
+    version='1.2.0',
     author="C.M. Downey",
     author_email="cmdowney@uw.edu",
     description="A utility package for NLP and Machine Learning",
@@ -17,6 +17,7 @@ setuptools.setup(
         "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
         "Operating System :: OS Independent",
     ],
+    python_requires='>=3.9',
     install_requires=[
         "numpy",
         "pyyaml",
