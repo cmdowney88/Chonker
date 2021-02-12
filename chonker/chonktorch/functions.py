@@ -1,4 +1,4 @@
-'''A module of functions for data pipelines using PyTorch'''
+"""A module of functions for data pipelines using PyTorch"""
 
 import math
 import random
@@ -8,10 +8,10 @@ import torch.nn as nn
 
 
 def sort_unsort_pmts(lst, descending=False):
-    '''
+    """
     Return the permutation used to sort a list, as well as the permutation
     necessary to restore it to its original order
-    '''
+    """
 
     sort_zip = list(zip(lst, [x for x in range(len(lst))]))
     sort_zip.sort(key=lambda x: x[0], reverse=descending)
@@ -23,10 +23,10 @@ def sort_unsort_pmts(lst, descending=False):
 
 
 def shuffle_unshuffle_pmts(length):
-    '''
+    """
     Return a random shuffle permutation over a given list length, as well as the
     permutation necessary to restore it to its original order
-    '''
+    """
 
     shuffle_pmt = [x for x in range(length)]
     random.shuffle(shuffle_pmt)
@@ -37,7 +37,7 @@ def shuffle_unshuffle_pmts(length):
 
 
 def partition(data, seq_len, batch_size):
-    '''
+    """
     Partition the data into batches of equal sequence lengths for parallel
     operation
     
@@ -45,7 +45,7 @@ def partition(data, seq_len, batch_size):
     determines the shape of the training tensor. For instance, if the number of
     batch size is B and the sequnce length is L, the tensor will be of shape
     (X, B) such that X is divisible by L
-    '''
+    """
 
     denominator = seq_len * batch_size
     num_batches = math.floor(len(data) / denominator)
@@ -53,7 +53,7 @@ def partition(data, seq_len, batch_size):
     data_tensor = torch.tensor(data[:new_length])
     data_partitions = data_tensor.view(batch_size, -1).t().contiguous()
     assert data_partitions.size(0) % seq_len == 0
-    return data_partitions, new_lengths
+    return data_partitions, new_length
 
 
 def pad_and_batch(
@@ -63,7 +63,7 @@ def pad_and_batch(
     gradient_accumulation=1,
     batch_shuffling="none"
 ):
-    '''
+    """
     Sort input sequences into batches based on sequence length, padding as
     necessary, and optionally shuffling by batch
 
@@ -73,7 +73,7 @@ def pad_and_batch(
     compatibility, and batches can optionally be sorted. Final shape of the
     tensor will be (num_batches, max_seq_length, batch_size). Final shape of
     the lengths index will be (num_batches, batch_size)
-    '''
+    """
 
     lengths = [len(line) for line in data]
     full_batch_size = batch_size * gradient_accumulation
@@ -156,7 +156,7 @@ def get_lr_lambda_by_epoch(
     gamma=0.9,
     gamma_epochs=1
 ):
-    '''
+    """
     Get learning-rate step lambda based on the total nummber of epochs,
     batches per epoch, and number of warmup epochs
 
@@ -164,7 +164,7 @@ def get_lr_lambda_by_epoch(
     Exponential decay is defined by the `gamma` base and `gamma_epochs`
     period over which the decay applies. For instance, if `gamma` is 0.5 and
     `gamma_epochs` is 1, the learning rate will decay by half every epoch
-    '''
+    """
 
     total_num_steps = num_epochs * batches_per_epoch
     num_warmup_steps = num_warmup_epochs * batches_per_epoch
@@ -188,7 +188,7 @@ def get_lr_lambda_by_steps(
     gamma=0.9,
     gamma_steps=1000
 ):
-    '''
+    """
     Get learning-rate step lambda based on the total nummber of steps and the
     number of warmup steps
 
@@ -196,7 +196,7 @@ def get_lr_lambda_by_steps(
     Exponential decay is defined by the `gamma` base and `gamma_steps` period
     over which the decay applies. For instance, if `gamma` is 0.5 and
     `gamma_steps` is 1000, the learning rate will decay by half every 1000 steps
-    '''
+    """
 
     return _lr_lambda(
         total_num_steps,
