@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 setuptools.setup(
     name='chonker',
-    version='1.2.0dev',
+    version='1.2.3dev',
     author="C.M. Downey",
     author_email="cmdowney@uw.edu",
     description="A utility package for NLP and Machine Learning",
