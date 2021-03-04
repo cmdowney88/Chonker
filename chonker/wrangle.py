@@ -118,7 +118,7 @@ def character_tokenize(
         return text
 
 
-def get_ngrams(corpus, max_length, min_count=1):
+def get_ngrams(corpus, max_length, min_length=1, min_count=1):
     """
     Get 1-to-n-grams over a corpus of input sentences, discarding entries if
     they occur less than `min_count` times, as well as bidrectional dictionary
@@ -126,7 +126,7 @@ def get_ngrams(corpus, max_length, min_count=1):
     """
     counts = {}
 
-    for n in range(1, max_length + 1):
+    for n in range(min_length, max_length + 1):
         for sentence in corpus:
             sentence_length = len(sentence)
             num_ngrams = sentence_length + 1 - n
