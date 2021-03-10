@@ -1,1 +1,3 @@
-'''Functions and modules for machine learning based on PyTorch'''
+"""Functions and modules for machine learning based on PyTorch"""
+
+from . import data, functions

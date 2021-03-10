@@ -1,14 +1,7 @@
-import warnings
-
-import chonker.chonktorch.functions as ctf
 import torch
+import chonker.chonktorch.functions as ctf
 import torch.nn as nn
 from torch.utils.data import Dataset
-
-warnings.warn(
-    "chonker.chonktorch.data_classes module is deprecated."
-    " Please use chonker.chonktorch.data", DeprecationWarning
-)
 
 
 class VariableLengthDataset(Dataset):
