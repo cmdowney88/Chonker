@@ -5,7 +5,7 @@ from torch.utils.data import Dataset
 
 
 class VariableLengthDataset(Dataset):
-    '''
+    """
     A PyTorch Dataset subclass for padded datasets of variable-length sequences
     in which it is undesirable to break the sequences into "streams" of a single
     length
@@ -50,7 +50,7 @@ class VariableLengthDataset(Dataset):
             be dropped. This may be useful if batching is being done by
             sequences and only complete batch sizes are acceptable (i.e.
             ``drop_final`` is ``True``). Default: ``soft_drop``
-    '''
+    """
     def __init__(
         self,
         data: list,
@@ -158,10 +158,10 @@ class VariableLengthDataset(Dataset):
         return self.data[index]
 
     def pad_collate(self, batch):
-        '''
+        """
         Collate and pad a list of (sequence, length) pairs into a contiguous
         tensor and list of lengths
-        '''
+        """
         sequences = [torch.tensor(x[0]) for x in batch]
         lengths = [x[1] for x in batch]
         tensor = nn.utils.rnn.pad_sequence(
