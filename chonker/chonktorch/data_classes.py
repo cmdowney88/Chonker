@@ -4,6 +4,7 @@ import chonker.chonktorch.functions as ctf
 import torch
 import torch.nn as nn
 from torch.utils.data import Dataset
+from . import functions as ctf
 
 warnings.warn(
     "chonker.chonktorch.data_classes module is deprecated."
