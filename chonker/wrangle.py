@@ -171,30 +171,41 @@ class Vocab():
             self.add_vocab(other_tokens)
         self.unk_id = self.tok_to_id[self.unk_token]
 
-        self.processed_sources = []
         if source:
             self.add_source(source)
 
+        self._check_invariant()
+
+    def _check_invariant(self):
+        size_1 = len(self.tok_to_id)
+        size_2 = len(self.id_to_tok)
+        same_size = (size_1 == size_2)
+        assert same_size
+        id_range = sorted(self.id_to_tok.keys())
+        gold_range = list(range(len(self.id_to_tok)))
+        contiguous = (id_range == gold_range)
+        assert contiguous
+
     def add_vocab(self, tokens):
-        """Add vocabulary items directly as a string or list of strings"""
-        if type(tokens) != list:
+        """Add vocabulary items directly as a string or iterable of strings"""
+        if type(tokens) == str:
             tokens = [tokens]
         for token in tokens:
             if token not in self.tok_to_id:
                 index = len(self.tok_to_id)
                 self.tok_to_id[token] = index
                 self.id_to_tok[index] = token
+        self._check_invariant()
 
     def add_source(self, source):
         """
-        Iterate through the source texts in `to_tokenize` If they have not 
-        yet been input, tokenize them and add their vocabulary
+        Iterate through the source text and add its vocabulary if not already
+        present
         """
-        if source not in self.processed_sources:
-            tokens = list(itertools.chain.from_iterable(source))
-            for token in tokens:
-                self.add_vocab(token)
-            self.processed_sources.append(source)
+        # Hack, this has the effect of creating a set while preserving the order
+        # of the elements
+        tokens = list(dict.fromkeys(flatten(source)))
+        self.add_vocab(tokens)
 
     def source_added(self, source):
         """Return new copy of `Vocab` object with new source text added"""
@@ -203,31 +214,28 @@ class Vocab():
         return new_vocab
 
     def reset(self):
-        """Completely empty all vocabulary items and source file lists"""
+        """Completely empty all vocabulary items"""
         self.tok_to_id = {}
         self.id_to_tok = {}
-        self.processed_sources = []
 
     def size(self):
         """Return the size of the vocabulary (number of unique IDs)"""
-        size1 = len(self.tok_to_id)
-        size2 = len(self.id_to_tok)
-        assert size1 == size2
-        return size1
+        tok_to_id_size = len(self.tok_to_id)
+        id_to_tok_size = len(self.id_to_tok)
+        assert tok_to_id_size == id_to_tok_size
+        return id_to_tok_size
 
     def to_ids(self, tokens):
         """
         Take in a string or list of string tokens and return the list of their 
         corresponding integer IDs
         """
-        if type(tokens) != list:
+        if type(tokens) == str:
             tokens = [tokens]
-        output = []
-        for token in tokens:
-            if token not in self.tok_to_id:
-                output.append(self.unk_id)
-            else:
-                output.append(self.tok_to_id[token])
+        output = [
+            self.tok_to_id[token] if token in self.tok_to_id else self.unk_id
+            for token in tokens
+        ]
         return output
 
     def to_tokens(self, ids):
@@ -235,41 +243,45 @@ class Vocab():
         Take in an integer ID or list of IDs and return the list of their 
         corresponding string tokens
         """
-        if type(ids) != list:
+        if type(ids) == int:
             ids = [ids]
-        output = []
-        for item in ids:
-            if item not in self.id_to_tok:
-                output.append(self.unk_token)
-            else:
-                output.append(self.id_to_tok[item])
+        output = [
+            self.id_to_tok[item] if item in self.id_to_tok else self.unk_token
+            for item in ids
+        ]
         return output
 
     def save(self, out_file):
         """
         Save the `Vocab` mapping to a yaml file
 
-        By default, the yaml object will be sorted by key (the token id). NOTE:
-        `processed_sources` attribute will not be saved, and so cannot be
-        recovered when loading from a saved `Vocab`
+        By default, the yaml object will be sorted by key (the token id)
         """
+        save_dict = self.id_to_tok.copy()
+        save_dict.update({'unknown': self.unk_token})
         with open(out_file, 'w') as f:
-            yaml.dump(self.id_to_tok, f)
+            yaml.dump(save_dict, f)
 
     def load(self, in_file):
         """
         Load the `Vocab` mapping from a saved yaml file
 
         NOTE: loading a saved Vocab will reset the current object, including any
-        special tokens. The unk token is always presumed to be at index 0
+        special tokens
         """
-        self.processed_sources = []
         self.unk_id = None
         self.unk_token = None
         self.tok_to_id = {}
         with open(in_file, 'r') as f:
             self.id_to_tok = yaml.load(f, Loader=yaml.SafeLoader)
+        self.unk_token = self.id_to_tok['unknown']
+        del self.id_to_tok['unknown']
         for id in self.id_to_tok:
             self.tok_to_id[self.id_to_tok[id]] = id
-        self.unk_id = 0
-        self.unk_token = self.id_to_tok[0]
+        self.unk_id = self.tok_to_id[self.unk_token]
+
+    @classmethod
+    def from_saved(cls, in_file):
+        vocab = cls()
+        vocab.load(in_file)
+        return vocab

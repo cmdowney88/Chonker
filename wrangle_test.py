@@ -284,7 +284,6 @@ id_to_tok_1 = {
 def test_vocab_init():
     assert vocab.tok_to_id == tok_to_id_1
     assert vocab.id_to_tok == id_to_tok_1
-    assert vocab.processed_sources == [basic_tokenized_text]
 
 
 def test_vocab_add_vocab():
@@ -299,21 +298,6 @@ def test_vocab_add_vocab():
 
 
 new_source = [['this', 'is', 'a', 'cat'], ['these', 'are', 'cats']]
-
-
-def test_vocab_add_source():
-    voc = copy.deepcopy(vocab)
-    voc.add_source(basic_tokenized_text)
-    assert voc.processed_sources == vocab.processed_sources
-    assert vocab.processed_sources == [basic_tokenized_text]
-    voc.add_source(new_source)
-    assert voc.processed_sources == [basic_tokenized_text, new_source]
-
-
-def test_vocab_source_added():
-    voc = vocab.source_added(new_source)
-    assert vocab.processed_sources == [basic_tokenized_text]
-    assert voc.processed_sources == [basic_tokenized_text, new_source]
 
 
 def test_vocab_reset():

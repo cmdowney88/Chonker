@@ -1,10 +1,15 @@
 """A module of functions for data pipelines using PyTorch"""
 
+import json
 import math
 import random
+from logging import Logger
+
 import torch
 import numpy as np
 import torch.nn as nn
+
+from ..wrangle import Vocab
 
 
 def sort_unsort_pmts(lst, descending=False):
@@ -111,6 +116,64 @@ def pad_and_batch(
             'unsort_pmt': unsort_pmt
         }
     return data_set
+
+
+def import_embeddings(
+    embedding_path: str,
+    vocab: Vocab,
+    indices_path: str = None,
+    init_range: float = 1.0,
+    logger: Logger = None
+):
+    """
+    Import pretrained NumPy embeddings for a given vocab, adding a randomized 
+    embedding if a vocabulary item is not included in the pretrained keys
+    
+    Args:
+        embedding_path: The base path to the pretrained embeddings. Assumes that
+            the numpy embeddings are at `{embedding_path}.npy`. If 
+            `indices_path` is `None`, assumes the embedding indices are at 
+            `{embedding_path}_indices.json`
+        vocab: The Vocab object for which to gather pretrained embeddings.
+            Embeddings not correponding to vocab items are not imported
+        indices_path: The path to the embedding indices. If `None`, defaults to
+            `{embedding_path}_indices.json`. Default: `None`
+        init_range: The positive end of the range around zero with which to
+            initialize missing embeddings. Default: `1.0`
+        logger: A logger through which to pipe informational messages
+    Returns:
+    """
+    if logger:
+        logger.info(
+            'Importing pretrained character embeddings from'
+            f' {embedding_path}.npy'
+        )
+    embeddings = np.load(f"{embedding_path}.npy")
+    if not indices_path:
+        indices_path = f"{embedding_path}_indices.json"
+    with open(indices_path, "r") as f:
+        embedding_tok_to_id = json.load(f)
+    embedding_dim = embeddings.shape[1]
+    sorted_embeddings = []
+    randomized_embeddings = []
+    for idx in sorted(vocab.id_to_tok.keys()):
+        token = vocab.id_to_tok[idx]
+        if token in embedding_tok_to_id:
+            sorted_embeddings.append(embeddings[embedding_tok_to_id[token]])
+        else:
+            sorted_embeddings.append(
+                np.random.uniform(-init_range, init_range, (embedding_dim))
+            )
+            randomized_embeddings.append(token)
+    pretrained_embeddings = np.array(sorted_embeddings)
+    assert pretrained_embeddings.shape[0] == len(vocab.id_to_tok)
+    assert pretrained_embeddings.shape[1] == embedding_dim
+    if logger:
+        logger.info(
+            'Tokens without pretrained embeddings:'
+            f' {randomized_embeddings}, randomly initializing'
+        )
+    return pretrained_embeddings
 
 
 def _lr_lambda(
