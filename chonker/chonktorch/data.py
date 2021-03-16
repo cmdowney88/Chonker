@@ -1,7 +1,8 @@
 import torch
-import chonker.chonktorch.functions as ctf
 import torch.nn as nn
 from torch.utils.data import Dataset
+
+from . import functions as ctf
 
 
 class VariableLengthDataset(Dataset):
