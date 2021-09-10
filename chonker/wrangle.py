@@ -90,6 +90,7 @@ def character_tokenize(
     in_file,
     preserve_case=False,
     split_tags=True,
+    preserve_tags=True,
     edge_tokens=False,
     out_file=None
 ):
@@ -102,8 +103,8 @@ def character_tokenize(
     text = [
         flatten(
             [
-                [char for char in case(word, preserve_case)]
-                if not is_tag(word) else [case(word, preserve_case)]
+                [case(word, preserve_case)] if (is_tag(word) and preserve_tags)
+                else [char for char in case(word, preserve_case)]
                 for word in line
             ]
         ) for line in text
